@@ -1,0 +1,18 @@
+{
+  "name": "cakeproject",
+  "version": "1.0.0",
+  "description": "fun cake game where we drag candel to lit the cake and blow it using noise",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "birthdaycake"
+  },
+  "keywords": [
+    "bck"
+  ],
+  "author": "rutuchadhari06",
+  "license": "ISC"
+}
