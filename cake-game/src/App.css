@@ -1,26 +1,57 @@
-.mainbody {
-  display: flex;
-  flex-direction: column;
-  align-items: center;      /* horizontal */
-  justify-content: center;  /* vertical */
-  min-height: 100vh;
-  width:100vw;
-  background-color: #ffffff;
-  cursor: none;
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
 }
 
+.mainbody {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  background: #ffffff;
+  cursor: none;
+  overflow: hidden;
+}
 
+/* title */
 .birthdaytext {
   position: absolute;
   top: 40px;
+  width: 100%;
+  text-align: center;
   font-family: 'Comic Sans MS', cursive, sans-serif;
-  color:rgb(72, 39, 14);
-  margin-bottom: 20px;
+  color: rgb(72, 39, 14);
 }
 
+/* cake */
 .cake-image {
-  position :absolute;
-  bottom:40px;
-  width: 300px;
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
   height: auto;
+}
+
+.cake-unlit {
+  width: 300px;   /* smaller */
+}
+
+.cake-lit {
+  width: 320px;   /* bigger */
+}
+
+
+/* matchstick cursor */
+.matchstick {
+  position: absolute;
+  width: 60px;
+  height: auto;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* glow */
+.matchstick.lit {
+  filter: drop-shadow(0 0 20px orange);
 }
