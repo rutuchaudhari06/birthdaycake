@@ -1,36 +1,70 @@
-import { useState, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { Hands } from "@mediapipe/hands";
+import { Camera } from "@mediapipe/camera_utils";
 import "./App.css";
 
 import unlitCake from "./images/unlitcake.png";
 import litCake from "./images/litcake.png";
 import matchstickImg from "./images/match.png";
 
+
 function App() {
-  // position of the matchstick
   const [pos, setPos] = useState({ x: 0, y: 0 });
-
-  // is the cake lit?
   const [isLit, setIsLit] = useState(false);
-
-  // reference to the cake DOM element
   const cakeRef = useRef(null);
 
-  function handleMouseMove(e) {
-    // get mainbody position relative to viewport
-    const rect = e.currentTarget.getBoundingClientRect();
+  const videoRef = useRef(null);   // webcam video
+  const handsRef = useRef(null);   // mediapipe instance
+  const cameraRef = useRef(null);  // camera controller
+  const containerRef=useRef(null);
+  useEffect(() => {
+    if (!videoRef.current) return;
 
-    // mouse position relative to mainbody
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-
-    // adjust so matchstick tip aligns with cursor
-    setPos({
-      x: x - 20, // half matchstick width
-      y: y - 5   // near the tip
+    const hands = new Hands({
+      locateFile: (file) =>
+        `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`,
     });
 
-    // --- proximity detection ---
-    const cakeRect = cakeRef.current.getBoundingClientRect();
+    hands.setOptions({
+      maxNumHands: 1,
+      modelComplexity: 1,
+      minDetectionConfidence: 0.7,
+      minTrackingConfidence: 0.7,
+    });
+
+    hands.onResults((results) => {
+      if (!results.multiHandLandmarks) return;
+
+      const indexFingerTip = results.multiHandLandmarks[0][8];
+
+      // normalized (0 → 1)
+      const handX = indexFingerTip.x;
+const handY = indexFingerTip.y;
+
+setPos({
+  x: (1 - handX) * window.innerWidth - 20,
+  y: handY * window.innerHeight - 20
+});
+
+    });
+
+    const camera = new Camera(videoRef.current, {
+      onFrame: async () => {
+        await hands.send({ image: videoRef.current });
+      },
+      width: 640,
+      height: 480,
+    });
+
+    camera.start();
+
+    handsRef.current = hands;
+    cameraRef.current = camera;
+
+    return () => {
+      camera.stop();
+    };
+  const cakeRect = cakeRef.current.getBoundingClientRect();
 
     const cakeCenterX = cakeRect.left + cakeRect.width / 2;
     const cakeCenterY = cakeRect.top + cakeRect.height / 2;
@@ -40,14 +74,14 @@ function App() {
 
     const distance = Math.sqrt(dx * dx + dy * dy);
 
-    // threshold for lighting the cake
     if (distance < 80) {
       setIsLit(true);
-    } 
-  }
+    }
+  }, []);
 
   return (
-    <div className="mainbody" onMouseMove={handleMouseMove}>
+    <div className="mainbody" ref={containerRef}>
+
       <h1 className="birthdaytext">Happy Birthday</h1>
 
       {/* Cake */}
@@ -60,13 +94,20 @@ function App() {
 
       {/* Matchstick cursor */}
       <img
-        className={`matchstick ${isLit ? "lit" : ""}`}
         src={matchstickImg}
-        alt="matchstick"
+        className="matchstick"
         style={{
           transform: `translate(${pos.x}px, ${pos.y}px)`
         }}
+        alt=""
       />
+      <video
+        ref={videoRef}
+        className="camera-view"
+        playsInline
+        muted
+      />
+
     </div>
   );
 }
